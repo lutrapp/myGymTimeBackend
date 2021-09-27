@@ -1,6 +1,5 @@
 package com.mygymtime.mygym.model;
 
-import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 

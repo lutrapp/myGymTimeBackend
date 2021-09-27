@@ -7,6 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,6 +33,20 @@ public class ApartmentController {
 	@GetMapping(value= "/{id}")
 	public ResponseEntity<Optional<Apartment>> findById(@PathVariable String id) {
 		return ResponseEntity.ok().body(repository.findById(id));
+	}
+	
+	//just admin people
+	@PostMapping(value= "/register")
+	public ResponseEntity<Apartment> save(@RequestBody Apartment apartment){
+		return ResponseEntity.created(null).body(repository.save(apartment));
+	}
+	
+	@PutMapping(value= "/update/{id}")
+	public ResponseEntity<Void> update(@PathVariable String id,
+			@RequestBody Apartment apartmentUpdate){
+		apartmentUpdate.setApartment(id);
+		repository.save(apartmentUpdate);
+		return ResponseEntity.noContent().build();
 	}
 	
 	//@GetMapping(path = {"/all"})
