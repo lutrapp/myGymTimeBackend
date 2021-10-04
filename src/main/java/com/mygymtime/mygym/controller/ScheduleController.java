@@ -21,26 +21,72 @@ import com.mygymtime.mygym.repository.ScheduleRepository;
 
 @RestController
 @CrossOrigin("*")
-@RequestMapping({"/schedule"})
+@RequestMapping({ "/schedule" })
 public class ScheduleController {
 	private ScheduleRepository repository;
-	
+
 	public ScheduleController(ScheduleRepository scheduleRepository) {
 		this.repository = scheduleRepository;
 	}
-	
-	@GetMapping(value= "/all") ResponseEntity<List<Schedule>> listAll(){
+
+	@GetMapping(value = "/all")
+	ResponseEntity<List<Schedule>> listAll() {
 		return ResponseEntity.ok().body(repository.findAll());
 	}
+
+	@GetMapping(value = "/{date}")
+	public ResponseEntity<Optional<Schedule>> findById(@PathVariable String date) {
+		Date dateConverted = convertDate(date);
+		if(dateConverted != null) {
+			return ResponseEntity.ok().body(repository.findById(dateConverted));
+		}else {
+			return (ResponseEntity<Optional<Schedule>>) ResponseEntity.notFound();
+		}
+		/*
+		 * SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-ddHH:mm"); try {
+		 * return ResponseEntity.ok().body(repository.findById(formatter.parse(date)));
+		 * } catch (ParseException e) { e.printStackTrace(); return
+		 * (ResponseEntity<Optional<Schedule>>) ResponseEntity.notFound(); }
+		 */
+	}
+
+	@PostMapping(value = "/{ap}/{date}")
+	public Boolean schedulePost(@PathVariable String ap, @PathVariable String date) {
+		Date dateConverted = convertDate(date);
+		Optional<Schedule> notFree = repository.findById(dateConverted);
+		if(notFree.isPresent()) {
+			return false;
+		}else {
+			Schedule schedule = new Schedule();
+			schedule.setApartment(ap);
+			schedule.setDt_schedule(dateConverted);
+			schedule.setReserved(true);
+			schedule.setTs(new Date());
+			this.repository.save(schedule);
+			return true;	
+		}
+		
+	}
+
+	@PutMapping(value = "/{ap}/{date}")
+	public Boolean scheduleUpdate(@PathVariable String ap, @PathVariable String date) {
+		Date dateConverted = convertDate(date);
+		Schedule schedule = new Schedule();
+		schedule.setApartment(ap);
+		schedule.setDt_schedule(dateConverted);
+		schedule.setReserved(true);
+		schedule.setTs(new Date());
+		this.repository.save(schedule);
+		return true;
+	}
 	
-	@GetMapping(value= "/{id}")
-	public ResponseEntity<Optional<Schedule>>findById(@PathVariable String id){
+	// method to convert string to date
+	public Date convertDate(String date) {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-ddHH:mm");
 		try {
-			return ResponseEntity.ok().body(repository.findById(formatter.parse(id)));
+			return formatter.parse(date);
 		} catch (ParseException e) {
-			e.printStackTrace();
-			return (ResponseEntity<Optional<Schedule>>) ResponseEntity.notFound();
+			return null;
 		}
 	}
 
